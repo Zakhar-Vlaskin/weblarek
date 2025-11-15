@@ -2,14 +2,15 @@ import './scss/styles.scss';
 
 // Импортируем все классы
 import { Api } from './components/base/Api';
-import { ApiClient } from './components/base/ApiClient';
-import { ProductList } from './components/base/Models/ProductList';
-import { Cart } from './components/base/Models/Cart';
-import { Buyer } from './components/base/Models/Buyer';
+import { ApiClient } from './components/api/ApiClient';
+import { ProductList } from './components/Models/ProductList';
+import { Cart } from './components/Models/Cart';
+import { Buyer } from './components/Models/Buyer';
+import {API_URL} from './utils/constants'
 
 async function main() {
   // Адрес сервера из Postman
-  const API_BASE_URL = import.meta.env.VITE_API_ORIGIN;
+  const API_BASE_URL = API_URL;
 
   // 1. СОЗДАЕМ ВСЕ КЛАССЫ    
   const api = new Api(API_BASE_URL);
@@ -97,6 +98,59 @@ async function main() {
   // 3) Метод очистка данных покупателя
   buyer.clear();
   console.log("Данные по заказу после удаления: ",  buyer.getData());
+
+
+
+  console.log("=== Тестирование валидации ===");
+  console.log("=== 1 без данных ===");
+  buyer.clear(); // Очищаем данные
+
+  // Тест если не будет заполненных данных
+  const emptyValidation = buyer.validate();
+  console.log('Валидация пустых данных:', emptyValidation);
+
+  // Тест если только одно поле запалненно
+  console.log("=== 2 Частичное заполнение (1 поле) ===");
+  buyer.setData({
+    payment: 'Cash'
+  })
+  const oneFieldValidation = buyer.validate();
+  console.log('Валидация (1 запалненное поле) данных:', oneFieldValidation);
+
+
+  // Тест если только два поля запалненно
+  console.log("=== 3 Частичное заполнение (2 поле) ===");
+  buyer.setData({
+    payment: 'Cash',
+    address: 'Moscow'
+  })
+  const twoFieldValidation = buyer.validate();
+  console.log('Валидация (2 запалненное поле) данных:', twoFieldValidation);
+
+
+
+
+  // Тест если только три поля запалненно
+  console.log("=== 4 Частичное заполнение (3 поле) ===");
+  buyer.setData({
+    payment: 'Cash',
+    address: 'Moscow',
+    phone: '731904184113'
+  })
+  const threeFieldValidation = buyer.validate();
+  console.log('Валидация (3 запалненное поле) данных:', threeFieldValidation);
+
+
+    // Тест если все поля заполнены
+  console.log("=== 5 все поля заполнены ===");
+  buyer.setData({
+    payment: 'Cash',
+    address: 'Moscow',
+    phone: '731904184113',
+    email: 'fwjeifnweo@yandex.ru'
+  })
+  const allFieldValidation = buyer.validate();
+  console.log('Валидация при всех заполненных данных:', allFieldValidation);
 }
 
 

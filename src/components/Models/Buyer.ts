@@ -1,4 +1,4 @@
-import { IBuyer, TPayment, IBuyerValidationResult } from "../../../types";
+import { IBuyer, TPayment, IBuyerValidationResult } from "../../types";
 
 export class Buyer{
   private _payment: TPayment;
