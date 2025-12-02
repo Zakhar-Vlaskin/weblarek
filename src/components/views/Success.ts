@@ -1,33 +1,33 @@
-import { ensureElement } from "../../utils/utils";
-import { Component } from "../base/Component";
-import { IEvents } from "../base/Events";
+import { Component } from '../base/Component';
+import { IEvents } from '../base/Events';
+import { ensureElement } from '../../utils/utils';
 
-interface ISuccess {
-  description: number; // Оставляем number, так как это сумма
+export interface ISuccessView {
+  total: number;
 }
 
-export class Success extends Component<ISuccess> {
+export class Success extends Component<ISuccessView> {
   protected descriptionElement: HTMLElement;
   protected closeButton: HTMLButtonElement;
 
-  constructor(protected events: IEvents, container: HTMLElement) {
+  constructor(
+    protected events: IEvents,
+    container: HTMLElement
+  ) {
     super(container);
 
-    this.descriptionElement = ensureElement<HTMLElement>('.order-success__description', container);
-    this.closeButton = ensureElement<HTMLButtonElement>('.order-success__close', container);
+    this.descriptionElement = ensureElement<HTMLElement>('.order-success__description', this.container);
+    this.closeButton = ensureElement<HTMLButtonElement>('.order-success__close', this.container);
 
     this.closeButton.addEventListener('click', () => {
-      events.emit('success:close');
+      this.events.emit('order:success-close', {});
     });
   }
 
-  set description(value: number) {
-    this.setText(this.descriptionElement, `Списано ${value} синапсов`);
-  }
-
-  protected setText(element: HTMLElement, value: string) {
-    if (element) {
-      element.textContent = value;
+  render(data?: Partial<ISuccessView>): HTMLElement {
+    if (data && data.total !== undefined) {
+      this.descriptionElement.textContent = `Списано ${data.total} синапсов`;
     }
+    return this.container;
   }
 }

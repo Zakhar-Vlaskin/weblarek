@@ -1,49 +1,59 @@
-import { ensureElement } from "../../utils/utils";
-import { Component } from "../base/Component";
-import { IEvents } from "../base/Events";
+import { Component } from '../base/Component';
+import { IEvents } from '../base/Events';
+import { ensureElement } from '../../utils/utils';
 
-interface IModal {
-  content: HTMLElement;
+export interface IModalView {
+  content?: HTMLElement;
 }
 
-export class Modal extends Component<IModal> {
+export class Modal extends Component<IModalView> {
+  protected contentElement: HTMLElement;
   protected closeButton: HTMLButtonElement;
-  protected contentContainer: HTMLElement;
 
-  constructor(container: HTMLElement, protected events: IEvents) {
+  constructor(
+    protected events: IEvents,
+    container: HTMLElement
+  ) {
     super(container);
 
+    this.contentElement = ensureElement<HTMLElement>('.modal__content', this.container);
     this.closeButton = ensureElement<HTMLButtonElement>('.modal__close', this.container);
-    this.contentContainer = ensureElement<HTMLElement>('.modal__content', this.container);
-    
-    this.closeButton.addEventListener('click', this.close.bind(this));
+
+    // Кнопка закрытия
+    this.closeButton.addEventListener('click', () => {
+      this.close();
+    });
+
+    // Клик по фону
     this.container.addEventListener('click', (event) => {
       if (event.target === this.container) {
         this.close();
       }
     });
-    this.contentContainer.addEventListener('click', (event) => event.stopPropagation());
-    
-    // Добавляем обработку клавиши Escape
-    document.addEventListener('keydown', (event: KeyboardEvent) => {
-      if (event.key === 'Escape' && this.container.classList.contains('modal_active')) {
-        this.close();
-      }
-    });
   }
 
-  set content(value: HTMLElement) {
-    this.contentContainer.replaceChildren(value);
+  setContent(content: HTMLElement) {
+    this.contentElement.innerHTML = '';
+    this.contentElement.append(content);
   }
 
-  open() {
+  open(content?: HTMLElement) {
+    if (content) {
+      this.setContent(content);
+    }
     this.container.classList.add('modal_active');
-    this.events.emit('modal:open');
+    this.events.emit('modal:open', {});
   }
 
   close() {
     this.container.classList.remove('modal_active');
-    this.contentContainer.replaceChildren();
-    this.events.emit('modal:close');
+    this.events.emit('modal:close', {});
+  }
+
+  render(data?: Partial<IModalView>): HTMLElement {
+    if (data?.content) {
+      this.setContent(data.content);
+    }
+    return this.container;
   }
 }

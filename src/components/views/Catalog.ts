@@ -1,24 +1,19 @@
-// src/components/views/Catalog.ts
 import { Component } from "../base/Component";
 
-interface ICatalog {
+export interface ICatalogView {
   items: HTMLElement[];
 }
 
-export class Catalog extends Component<ICatalog> {
-  protected _list: HTMLElement;
-
+export class Catalog extends Component<ICatalogView> {
   constructor(container: HTMLElement) {
     super(container);
-    this._list = container;
   }
 
-  set items(items: HTMLElement[]) {
-    
-    if (items.length > 0) {
-      this._list.replaceChildren(...items);
-    } else {
-      this._list.innerHTML = '<p>Товары не найдены</p>';
+  render(data?: Partial<ICatalogView>): HTMLElement {
+    if (data?.items) {
+      this.container.innerHTML = '';
+      data.items.forEach((item) => this.container.append(item));
     }
+    return this.container;
   }
 }
