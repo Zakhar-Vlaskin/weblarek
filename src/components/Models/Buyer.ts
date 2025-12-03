@@ -1,74 +1,86 @@
-import { IBuyer, TPayment, IBuyerValidationResult } from "../../types";
-import { IEvents } from "../base/Events";
+// src/components/Models/Buyer.ts
+import { IBuyer, TPayment, IBuyerValidationResult } from '../../types';
+import { IEvents } from '../base/Events';
 
 export class Buyer {
-  private _payment: TPayment;
-  private _address: string;
-  private _phone: string;
-  private _email: string;
-  private events: IEvents;
+  private payment: TPayment;
+  private address: string;
+  private phone: string;
+  private email: string;
 
-  constructor(events: IEvents, data?: Partial<IBuyer>) {
-    this.events = events;
-    this._payment = data?.payment || '';
-    this._address = data?.address || '';
-    this._phone = data?.phone || '';
-    this._email = data?.email || '';
+  constructor(
+    private events: IEvents,
+    data?: Partial<IBuyer>
+  ) {
+    this.payment = data?.payment || '';
+    this.address = data?.address || '';
+    this.phone = data?.phone || '';
+    this.email = data?.email || '';
   }
 
-  private emitChange() {
-    this.events.emit('buyer:changed', {
-      buyer: this.getData(),
-      errors: this.validate()
-    });
-  }
-
-  // Метод сохранения данных в модели
+  // Сохранение данных покупателя, с генерацией события только при реальном изменении
   setData(data: Partial<IBuyer>) {
-    if (data.payment !== undefined) this._payment = data.payment;
-    if (data.address !== undefined) this._address = data.address;
-    if (data.phone !== undefined) this._phone = data.phone;
-    if (data.email !== undefined) this._email = data.email; 
+    let changed = false;
 
-    this.emitChange();
+    if (data.payment !== undefined && data.payment !== this.payment) {
+      this.payment = data.payment;
+      changed = true;
+    }
+
+    if (data.address !== undefined && data.address !== this.address) {
+      this.address = data.address;
+      changed = true;
+    }
+
+    if (data.phone !== undefined && data.phone !== this.phone) {
+      this.phone = data.phone;
+      changed = true;
+    }
+
+    if (data.email !== undefined && data.email !== this.email) {
+      this.email = data.email;
+      changed = true;
+    }
+
+    if (changed) {
+      this.events.emit('buyer:changed', {});
+    }
   }
 
-  // Метод получение всех данных покупателя
+  // Получить все данные покупателя
   getData(): IBuyer {
     return {
-      payment: this._payment,
-      address: this._address,
-      phone: this._phone,
-      email: this._email,
+      payment: this.payment,
+      address: this.address,
+      phone: this.phone,
+      email: this.email,
     };
   }
 
-  // Метод очистки данных покупателя
+  // Очистка всех данных (после успешного заказа)
   clear() {
-    this._payment = '';
-    this._address = '';
-    this._phone = '';
-    this._email = '';
-    this.emitChange();
+    this.payment = '';
+    this.address = '';
+    this.phone = '';
+    this.email = '';
+
+    this.events.emit('buyer:changed', {});
   }
 
   // Валидация данных покупателя
   validate(): IBuyerValidationResult {
     const errors: IBuyerValidationResult = {};
 
-    if (!this._payment) {
+    if (!this.payment) {
       errors.payment = 'Не выбран вид оплаты';
     }
-
-    if (!this._email.trim()) {
+    if (!this.email.trim()) {
       errors.email = 'Укажите email';
     }
-    
-    if (!this._phone.trim()) {
+    if (!this.phone.trim()) {
       errors.phone = 'Укажите номер телефона';
     }
-
-    if (!this._address.trim()) {
+    if (!this.address.trim()) {
       errors.address = 'Укажите адрес доставки';
     }
 

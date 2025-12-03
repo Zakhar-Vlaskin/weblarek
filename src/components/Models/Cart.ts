@@ -1,63 +1,66 @@
-import { IProduct } from "../../types";
-import { IEvents } from "../base/Events";
+// src/components/Models/Cart.ts
+import { IProduct } from '../../types';
+import { IEvents } from '../base/Events';
 
 export class Cart {
-  private _items: IProduct[];
-  private events: IEvents;
+  private items: IProduct[];
 
-  constructor(events: IEvents, items?: IProduct[]) {
-    this.events = events;
-    this._items = items || [];
+  constructor(
+    private events: IEvents,
+    items?: IProduct[]
+  ) {
+    this.items = items ?? [];
   }
 
-  private emitChange() {
-    this.events.emit('cart:changed', {
-      items: this._items,
-      total: this.getTotalPrice(),
-      count: this.getTotalCount()
-    });
-  }
-
-  // Метод получение массива товаров, которые находятся в корзине
+  // Массив товаров в корзине
   getItems(): IProduct[] {
-    return this._items;
+    return this.items;
   }
 
-  // Метод добавление товара, который был получен в параметре, в массив корзины
+  // Добавить товар в корзину
   addItem(item: IProduct) {
-    this._items.push(item);
-    this.emitChange();
+    this.items.push(item);
+    this.events.emit('cart:changed', {});
   }
 
-  // Метод удаление товара, полученного в параметре из массива корзины
+  // Удалить товар из корзины
   removeItem(item: IProduct) {
-    const index = this._items.findIndex(cartItem => cartItem.id === item.id);
+    const index = this.items.findIndex((cartItem) => cartItem.id === item.id);
     if (index !== -1) {
-      this._items.splice(index, 1);
-      this.emitChange();
+      this.items.splice(index, 1);
+      this.events.emit('cart:changed', {});
     }
   }
 
-  //Метод очистка корзины
+  // Очистить корзину целиком
   clear() {
-    this._items = [];
-    this.emitChange();
+    if (this.items.length === 0) return;
+    this.items = [];
+    this.events.emit('cart:changed', {});
   }
 
-  // Метод получение стоимости всех товаров в корзине
+  // Общая стоимость всех товаров
   getTotalPrice(): number {
-    return this._items.reduce((total, item) => {
-      return total + (item.price || 0); 
-    }, 0);
-  }
-  
-  // Метод получение количества товаров в корзине
-  getTotalCount(): number {
-    return this._items.length;
+    return this.items.reduce((total, item) => total + (item.price || 0), 0);
   }
 
-  // Метод проверка наличия товара в корзине по его id, полученного в параметр метода
+
+  removeById(id: string): void {
+  const index = this.items.findIndex((item) => item.id === id);
+    if (index !== -1) {
+      this.items.splice(index, 1);
+      this.events.emit('cart:changed', {});
+    }
+  }
+
+
+  // Количество товаров
+  getTotalCount(): number {
+    return this.items.length;
+  }
+
+  // Есть ли товар с таким id в корзине
   contains(id: string): boolean {
-    return this._items.some(item => item.id === id);
+    return this.items.some((item) => item.id === id);
   }
 }

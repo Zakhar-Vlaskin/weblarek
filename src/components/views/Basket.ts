@@ -5,9 +5,15 @@ import { ensureElement } from '../../utils/utils';
 export interface IBasketView {
   items: HTMLElement[];
   total: number;
-  emptyText?: string;
 }
 
+/**
+ * Представление корзины.
+ * Отвечает только за отображение:
+ * - списка элементов корзины
+ * - общей суммы
+ * - доступности кнопки "Оформить"
+ */
 export class Basket extends Component<IBasketView> {
   protected listElement: HTMLElement;
   protected totalElement: HTMLElement;
@@ -28,21 +34,21 @@ export class Basket extends Component<IBasketView> {
     });
   }
 
-  render(data?: Partial<IBasketView>): HTMLElement {
-    if (data) {
-      if (data.items) {
-        this.listElement.innerHTML = '';
-        data.items.forEach((item) => this.listElement.append(item));
+  /**
+   * Устанавливает элементы корзины.
+   * Используется базовым render() через Object.assign(this, data).
+   */
+  set items(items: HTMLElement[]) {
+    // Меняем весь список за одну операцию
+    this.listElement.replaceChildren(...items);
+    // Блокируем кнопку "Оформить", если корзина пустая
+    this.orderButton.disabled = items.length === 0;
+  }
 
-        const isEmpty = data.items.length === 0;
-        this.orderButton.disabled = isEmpty;
-      }
-
-      if (data.total !== undefined) {
-        this.totalElement.textContent = `${data.total} синапсов`;
-      }
-    }
-
-    return this.container;
+  /**
+   * Устанавливает общую сумму заказа.
+   */
+  set total(value: number) {
+    this.totalElement.textContent = `${value} синапсов`;
   }
 }

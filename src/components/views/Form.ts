@@ -17,7 +17,7 @@ export abstract class Form<T> extends Component<T> {
   constructor(
     protected events: IEvents,
     container: HTMLElement,
-    protected submitEventName: string, // имя события, которое генерируется при submit
+    protected submitEventName: string // имя события, которое генерируется при submit
   ) {
     super(container);
 
@@ -27,7 +27,7 @@ export abstract class Form<T> extends Component<T> {
 
     this.formElement.addEventListener('submit', (event) => {
       event.preventDefault();
-      this.events.emit(this.submitEventName, {} as any);
+      this.events.emit(this.submitEventName);
     });
   }
 
@@ -49,6 +49,4 @@ export abstract class Form<T> extends Component<T> {
       this.submitButton.disabled = !valid;
     }
   }
-
-  // render() наследуется от Component<T> и в базовом классе можно не переопределять.
 }

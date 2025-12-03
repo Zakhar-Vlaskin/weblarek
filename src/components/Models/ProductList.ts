@@ -1,41 +1,45 @@
-import { IProduct } from "../../types";
-import { IEvents } from "../base/Events";
+// src/components/Models/ProductList.ts
+import { IProduct } from '../../types';
+import { IEvents } from '../base/Events';
 
 export class ProductList {
-  private _items: IProduct[];
-  private _selectedItem: IProduct | null;
-  private events: IEvents;
-  
-  constructor(events: IEvents, products?: IProduct[]) {
-    this.events = events;
-    this._items = products || []; // массив всех товаров в каталоге
-    this._selectedItem = null; // текущий выбранный товар
+  private items: IProduct[];
+  private selectedItem: IProduct | null;
+
+  constructor(
+    private events: IEvents,
+    products?: IProduct[]
+  ) {
+    this.items = products ?? [];
+    this.selectedItem = null;
   }
 
   // Метод сохранения массива товаров
   setItems(items: IProduct[]) {
-    this._items = items;
+    this.items = items;
+    // Сообщаем презентеру: каталог изменился
     this.events.emit('catalog:changed', {});
   }
 
-  // Метод получения массива товаров из модели
+  // Получить массив товаров
   getItems(): IProduct[] {
-    return this._items;
+    return this.items;
   }
 
-  // Метод получение одного товара по его id
+  // Получить товар по id
   getItem(id: string): IProduct | undefined {
-    return this._items.find(item => item.id === id);
+    return this.items.find((item) => item.id === id);
   }
 
-  // Метод сохранения товара для подробного отображения
-  setSelectedItem(item: IProduct | null) {
-    this._selectedItem = item;
-    this.events.emit('product:selected', {});
+  // Сохранить выбранный товар для подробного просмотра
+  setSelectedItem(item: IProduct) {
+    this.selectedItem = item;
+    // Сообщаем презентеру: выбран товар
+    this.events.emit('product:selected', { id: item.id });
   }
 
-  // Метод получения товара для подробного отображения
+  // Получить выбранный товар
   getSelectedItem(): IProduct | null {
-    return this._selectedItem;
+    return this.selectedItem;
   }
 }

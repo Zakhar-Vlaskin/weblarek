@@ -33,8 +33,7 @@ export class Modal extends Component<IModalView> {
   }
 
   setContent(content: HTMLElement) {
-    this.contentElement.innerHTML = '';
-    this.contentElement.append(content);
+    this.contentElement.replaceChildren(content);
   }
 
   open(content?: HTMLElement) {
@@ -42,12 +41,10 @@ export class Modal extends Component<IModalView> {
       this.setContent(content);
     }
     this.container.classList.add('modal_active');
-    this.events.emit('modal:open', {});
   }
 
   close() {
     this.container.classList.remove('modal_active');
-    this.events.emit('modal:close', {});
   }
 
   render(data?: Partial<IModalView>): HTMLElement {
