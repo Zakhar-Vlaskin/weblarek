@@ -1,3 +1,4 @@
+// src/main.ts
 import './scss/styles.scss';
 
 import { API_URL } from './utils/constants';
@@ -65,37 +66,35 @@ const successView = new Success(events, cloneTemplate<HTMLElement>(successTempla
 
 // ---------- HELPERS ПРЕЗЕНТЕРА ----------
 
-// Определяем, открыто ли сейчас превью товара в модалке
-function isProductPreviewOpen(): boolean {
-  const content = modalElement.querySelector('.modal__content');
-  if (!content) return false;
-  return Boolean(content.querySelector('.card.card_full'));
-}
-
 // Создать карточку каталога
 function createCatalogCard(product: IProduct): HTMLElement {
   const card = new ProductCard(
     cloneTemplate<HTMLElement>(cardCatalogTemplate),
-    (id: string) => {
-      events.emit('product:select', { id });
+    () => {
+      events.emit('product:select', { id: product.id });
     }
   );
 
   return card.render({
-    id: product.id,
     title: product.title,
     price: product.price,
     category: product.category,
-    image: product.image,
-    inCart: cart.contains(product.id)
+    image: product.image
   });
 }
 
 // Создать строку товара в корзине
 function createBasketItem(product: IProduct, index: number): HTMLElement {
-  const item = new BasketItem(events, cloneTemplate<HTMLElement>(basketItemTemplate));
+  const item = new BasketItem(
+    cloneTemplate<HTMLElement>(basketItemTemplate),
+    {
+      onRemove: () => {
+        events.emit('basket:item-remove', { id: product.id });
+      }
+    }
+  );
+
   return item.render({
-    id: product.id,
     index,
     title: product.title,
     price: product.price
@@ -159,7 +158,6 @@ events.on('product:selected', () => {
   if (!product) return;
 
   const view = productPreviewView.render({
-    id: product.id,
     title: product.title,
     price: product.price,
     category: product.category,
@@ -173,24 +171,7 @@ events.on('product:selected', () => {
 
 // Корзина изменилась
 events.on('cart:changed', () => {
-  // Обновляем корзину
   renderCart();
-
-  // Обновляем превью, если оно открыто
-  const selected = productList.getSelectedItem();
-  if (selected && isProductPreviewOpen()) {
-    const view = productPreviewView.render({
-      id: selected.id,
-      title: selected.title,
-      price: selected.price,
-      category: selected.category,
-      image: selected.image,
-      description: selected.description,
-      inCart: cart.contains(selected.id)
-    });
-
-    modal.setContent(view);
-  }
 });
 
 // Данные покупателя изменились
@@ -214,16 +195,18 @@ events.on<{ id: string }>('product:select', (data) => {
 });
 
 // Клик по кнопке в превью («В корзину» / «Удалить из корзины»)
-events.on<{ id: string }>('product:add-to-cart', (data) => {
-  const product = productList.getItem(data.id);
-  if (!product) return;
-  if (product.price === null) return;
+events.on('product:add-to-cart', () => {
+  const product = productList.getSelectedItem();
+  if (!product || product.price === null) return;
 
   if (cart.contains(product.id)) {
     cart.removeById(product.id);
   } else {
     cart.addItem(product);
   }
+
+  // После операции — закрываем модалку
+  modal.close();
 });
 
 // Удаление товара из корзины

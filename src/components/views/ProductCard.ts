@@ -4,10 +4,8 @@ import { ensureElement } from '../../utils/utils';
 import { CDN_URL, categoryMap } from '../../utils/constants';
 
 export interface IProductCardView extends IBaseCardView {
-  id: string;
   category: string;
   image: string;
-  inCart?: boolean;
 }
 
 /**
@@ -16,24 +14,23 @@ export interface IProductCardView extends IBaseCardView {
  * добавляет отображение категории и картинки.
  */
 export class ProductCard extends BaseCard<IProductCardView> {
-  protected id?: string;
   protected categoryElement: HTMLElement;
   protected imageElement: HTMLImageElement;
 
   constructor(
     container: HTMLElement,
-    protected onSelect: (id: string) => void
+    private onSelect?: () => void
   ) {
     super(container);
 
     this.categoryElement = ensureElement<HTMLElement>('.card__category', this.container);
     this.imageElement = ensureElement<HTMLImageElement>('.card__image', this.container);
 
-    this.container.addEventListener('click', () => {
-      if (this.id) {
-        this.onSelect(this.id);
-      }
-    });
+    if (this.onSelect) {
+      this.container.addEventListener('click', () => {
+        this.onSelect && this.onSelect();
+      });
+    }
   }
 
   render(data?: Partial<IProductCardView>): HTMLElement {
@@ -42,10 +39,6 @@ export class ProductCard extends BaseCard<IProductCardView> {
 
     if (!data) {
       return this.container;
-    }
-
-    if (data.id !== undefined) {
-      this.id = data.id;
     }
 
     // Категория + модификатор фона
@@ -63,6 +56,7 @@ export class ProductCard extends BaseCard<IProductCardView> {
     if (data.image !== undefined) {
       this.setImage(this.imageElement, CDN_URL + data.image, data.title);
     }
+
     return this.container;
   }
 }

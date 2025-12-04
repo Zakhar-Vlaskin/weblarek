@@ -1,55 +1,45 @@
-import { IEvents } from '../base/Events';
+// src/components/Views/BasketItem.ts
 import { ensureElement } from '../../utils/utils';
 import { BaseCard, IBaseCardView } from './BaseCard';
 
 export interface IBasketItemView extends IBaseCardView {
-  id: string;
   index: number;
 }
 
+export type TBasketItemActions = {
+  onRemove?: () => void;
+};
+
 /**
- * Представление строки товара в корзине.
- * Наследуется от BaseCard и использует общий функционал
- * отображения названия и цены.
+ * Строка товара в корзине.
  */
 export class BasketItem extends BaseCard<IBasketItemView> {
   protected indexElement: HTMLElement;
   protected deleteButton: HTMLButtonElement;
 
-  protected id?: string;
-
   constructor(
-    protected events: IEvents,
-    container: HTMLElement
+    container: HTMLElement,
+    private actions?: TBasketItemActions
   ) {
     super(container);
 
     this.indexElement = ensureElement<HTMLElement>('.basket__item-index', this.container);
     this.deleteButton = ensureElement<HTMLButtonElement>('.basket__item-delete', this.container);
 
-    this.deleteButton.addEventListener('click', (e) => {
-      e.stopPropagation();
-
-      if (!this.id) return;
-
-      this.events.emit('basket:item-remove', { id: this.id });
-    });
+    if (this.actions?.onRemove) {
+      this.deleteButton.addEventListener('click', (event) => {
+        event.stopPropagation();
+        this.actions?.onRemove && this.actions.onRemove();
+      });
+    }
   }
 
   render(data?: Partial<IBasketItemView>): HTMLElement {
-
+    // Общая часть: title + price
     super.render(data);
 
-    if (data) {
-
-      if (data.id !== undefined) {
-        this.id = data.id;
-      }
-
-
-      if (data.index !== undefined) {
-        this.indexElement.textContent = String(data.index);
-      }
+    if (data?.index !== undefined) {
+      this.indexElement.textContent = String(data.index);
     }
 
     return this.container;

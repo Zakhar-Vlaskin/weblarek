@@ -1,10 +1,10 @@
+// src/components/Views/ProductPreview.ts
 import { IEvents } from '../base/Events';
 import { ensureElement } from '../../utils/utils';
 import { BaseCard, IBaseCardView } from './BaseCard';
 import { CDN_URL, categoryMap } from '../../utils/constants';
 
 export interface IProductPreviewView extends IBaseCardView {
-  id: string;
   category: string;
   image: string;
   description: string;
@@ -16,7 +16,6 @@ export interface IProductPreviewView extends IBaseCardView {
  * Наследует общее отображение названия и цены из BaseCard.
  */
 export class ProductPreview extends BaseCard<IProductPreviewView> {
-  protected id?: string;
   protected descriptionElement: HTMLElement;
   protected categoryElement: HTMLElement;
   protected imageElement: HTMLImageElement;
@@ -34,10 +33,7 @@ export class ProductPreview extends BaseCard<IProductPreviewView> {
     this.buttonElement = ensureElement<HTMLButtonElement>('.card__button', this.container);
 
     this.buttonElement.addEventListener('click', () => {
-      if (!this.id) {
-        return;
-      }
-      this.events.emit('product:add-to-cart', { id: this.id });
+      this.events.emit('product:add-to-cart');
     });
   }
 
@@ -47,11 +43,6 @@ export class ProductPreview extends BaseCard<IProductPreviewView> {
 
     if (!data) {
       return this.container;
-    }
-
-    // Служебный id — только в поле, не в разметке
-    if (data.id !== undefined) {
-      this.id = data.id;
     }
 
     // Категория + модификатор фона
@@ -86,11 +77,10 @@ export class ProductPreview extends BaseCard<IProductPreviewView> {
     if (data.inCart !== undefined) {
       if (data.inCart) {
         this.buttonElement.textContent = 'Удалить из корзины';
-        this.buttonElement.disabled = false;
       } else {
         this.buttonElement.textContent = 'В корзину';
-        this.buttonElement.disabled = false;
       }
+      this.buttonElement.disabled = false;
     }
 
     return this.container;
